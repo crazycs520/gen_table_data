@@ -35,7 +35,7 @@ func Run(db, tableName, addr, pwd string, concurrency, txnSize int) {
 	passwd = pwd
 	dbName = db
 
-	log.Infof("Start run generate random data")
+	log.Infof("Start run generate random data, concurrent: %v, txn: %v", concurrency, txnSize)
 	ts := testSuit{
 		db: getCli(),
 	}
@@ -75,7 +75,7 @@ func Run(db, tableName, addr, pwd string, concurrency, txnSize int) {
 						}
 
 						// new connection.
-						if rand.Float64() > 0.95 {
+						if rand.Float64() >= 0.999 {
 							newConn, err := newConnection()
 							if err == nil {
 								conn.Close()
