@@ -10,7 +10,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var (
@@ -21,20 +20,20 @@ var (
 
 func getCli() *sql.DB {
 	dbDSN := fmt.Sprintf("root:%s@tcp(%s)/%s", passwd, dbAddr, dbName)
+	log.Infof("new connection, %v", dbDSN)
 	db, err := sql.Open("mysql", dbDSN)
 	if err != nil {
-		fmt.Println("can not connect to database. ", err)
+		log.Errorf("can not connect to database. ", err)
 		os.Exit(1)
 	}
 	db.SetMaxOpenConns(1)
 	return db
 }
 
-func Run(dbName, tableName, addr, passwd string, concurrency, txnSize int) {
+func Run(db, tableName, addr, pwd string, concurrency, txnSize int) {
 	dbAddr = addr
-	passwd = passwd
-	dbName = dbName
-	initFileLog(log.StandardLogger())
+	passwd = pwd
+	dbName = db
 
 	log.Infof("Start run generate random data")
 	ts := testSuit{
@@ -136,21 +135,4 @@ func newConnection() (conn *sql.Conn, err error) {
 		}
 	}
 	return nil, err
-}
-
-// initFileLog initializes file based logging options.
-func initFileLog(logger *log.Logger) error {
-	// use lumberjack to logrotate
-	output := &lumberjack.Logger{
-		Filename:  "gen_data.log",
-		MaxSize:   1 * 1024 * 1024 * 1024,
-		LocalTime: true,
-	}
-
-	if logger == nil {
-		log.SetOutput(output)
-	} else {
-		logger.Out = output
-	}
-	return nil
 }

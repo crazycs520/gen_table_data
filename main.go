@@ -17,6 +17,6 @@ var (
 
 func main() {
 	flag.Parse()
-	randsql.Run(*dbName, *tableName, *addr,*passwd,*concurrency, *txnSize )
+	randsql.InitLogger()
+	randsql.Run(*dbName, *tableName, *addr, *passwd, *concurrency, *txnSize)
 }
-
