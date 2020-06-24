@@ -104,6 +104,8 @@ func Run(db, tableName, addr, pwd string, concurrency, txnSize int) {
 		prepareInsertIgnore,
 		prepareUpdate,
 		prepareDelete,
+		prepareDelete,
+		prepareDelete,
 		prepareReplace,
 	}
 	for i := 0; i < 1000000; i++ {

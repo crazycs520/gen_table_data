@@ -143,7 +143,8 @@ func doInsertJob(task *dmlJobTask) error {
 	return nil
 }
 
-func buildWhereColumns(col *columnInfo) []*columnDescriptor {
+func buildWhereColumns(table *tableInfo) []*columnDescriptor {
+	col := pickWhereColumns(table)
 	if len(col.rows) == 0 {
 		return nil
 	}
@@ -154,14 +155,25 @@ func buildWhereColumns(col *columnInfo) []*columnDescriptor {
 	return whereColumns
 }
 
+func pickWhereColumns(table *tableInfo) *columnInfo {
+	for i := 0; i < 10; i++ {
+		randCol := table.columns[rand.Intn(len(table.columns))]
+		switch randCol.k {
+		case KindBit, KindTINYINT:
+			continue
+		}
+		return randCol
+	}
+	return table.columns[rand.Intn(len(table.columns))]
+}
+
 func prepareUpdate(table *tableInfo, taskCh chan *dmlJobTask) {
 	if table.numberOfRows == 0 {
 		return
 	}
 	table.lock.Lock()
-	randCol := table.columns[rand.Intn(len(table.columns))]
 	// build where conditions
-	whereColumns := buildWhereColumns(randCol)
+	whereColumns := buildWhereColumns(table)
 	table.lock.Unlock()
 
 	assigns := []*columnDescriptor{}
@@ -228,10 +240,7 @@ func doUpdateJob(task *dmlJobTask) error {
 
 func prepareDelete(table *tableInfo, taskCh chan *dmlJobTask) {
 	table.lock.Lock()
-
-	randCol := table.columns[rand.Intn(len(table.columns))]
-	// build where conditions
-	whereColumns := buildWhereColumns(randCol)
+	whereColumns := buildWhereColumns(table)
 	table.lock.Unlock()
 
 	sql := fmt.Sprintf("delete from `%s`.`%s`", table.dbName, table.tblName)
